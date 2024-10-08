@@ -9,7 +9,7 @@ namespace Social_App.Core.Exceptions
     public class NotFoundException : Exception
     {
         public NotFoundException(string message) : base(message) { }
-        public NotFoundException(string entityType, string id) : base($"Entity of Type {entityType} with Id '{id}' not found.") { }
+        public NotFoundException(string entityType, string id) : base($"Entity of Type {entityType} with identifer '{id}' not found.") { }
 
     }
 }

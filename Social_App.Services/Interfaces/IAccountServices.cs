@@ -10,5 +10,7 @@ namespace Social_App.Services.Interfaces
     {
         string HashPasswordWithSalt(string salt,string password);
         string CreateSalt();
+        string CreateVerifecationCode(int length);
+        string HashString(string input);
     }
 }

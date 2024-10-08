@@ -10,17 +10,14 @@ namespace Social_App.Services.Interfaces
 {
     public interface IUserManagerWithMarten
     {
-        Task<string> RegisterAccount(User user);
-        Task<bool> VerifyAccount(User user, string verifecationCode);
+        Task<bool> RegisterAccount(User user);
+        Task<bool> VerifyAccount(string username, string verifecationCode);
 
-        Task<TokenModel> LoginWithEmail(string email, string password);
-        Task<TokenModel> LoginWithUserName(string userName, string password);
+        Task<TokenModel> LoginWithEmailOrUserName(string userName, string password);
 
-        Task<User> FindUserByUserName(string userName);
-        Task<User> FindUserByEmail(string email);
+        Task<User> FindUserByEmailOrUserName(string userName);
 
-        Task<bool> IsEmailActive(string email);
-        Task<bool> IsUserNameActive(string userName);
+        Task<bool> IsUserActive(string userName);
         Task<bool> UserNameExists(string userName);
         Task<bool> EmailExists(string email);
     }

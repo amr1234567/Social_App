@@ -69,7 +69,8 @@ namespace Social_App.API.Features.Users.Handlers
             var result = await userManager.RegisterAccount(user);
             return new CreateUserResponse
             {
-                VerifecationCode = result
+                Message = result ? "Created Successfully" : "Failed",
+                Success = result,
             };
         }
     }

@@ -1,5 +1,6 @@
 using Marten;
 using Social_App.API.MediatRBehaviors;
+using Social_App.Core.Helpers;
 using Social_App.Services.IdentityServices;
 using Social_App.Services.Interfaces;
 namespace Social_App.API
@@ -34,10 +35,15 @@ namespace Social_App.API
             }).UseLightweightSessions();
 
 
+            //helpers
+
+            builder.Services.Configure<EmailDetails>(builder.Configuration.GetSection("emailSenderOptions"));
+
             //Scopes
 
             builder.Services.AddScoped<IUserManagerWithMarten, UserManagerWithMarten>();
             builder.Services.AddScoped<IAccountServices, AccountServices>();
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
 
             var app = builder.Build();
 
