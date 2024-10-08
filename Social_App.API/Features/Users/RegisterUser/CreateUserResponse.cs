@@ -1,4 +1,4 @@
-﻿namespace Social_App.API.Features.Users.DtoModels
+﻿namespace Social_App.API.Features.Users.RegisterUser
 {
     public class CreateUserResponse
     {

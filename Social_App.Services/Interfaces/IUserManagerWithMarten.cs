@@ -21,6 +21,10 @@ namespace Social_App.Services.Interfaces
 
         Task<bool> IsUserActive(string userName);
         Task<bool> UserNameExists(string userName);
-        Task<bool> EmailExists(string email);
+        Task<bool> DoesEmailExists(string email);
+
+        Task<bool> RequestForResetPassword(string email);
+        Task<bool> VerifyChangingPasswordCodeToken(string email, string code);
+        Task<bool> ChangePassword(string email, string newPassword, string code);
     }
 }

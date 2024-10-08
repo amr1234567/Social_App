@@ -16,5 +16,6 @@ namespace Social_App.Services.Interfaces
         string CreateJwtToken(List<Claim> claims);
         string CreateRefreshToken();
         ClaimsPrincipal GetPrincipalFromToken(string token);
+        string GenerateTokenFromPrincipal(ClaimsPrincipal principal);
     }
 }

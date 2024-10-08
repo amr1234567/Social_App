@@ -15,7 +15,7 @@ namespace Social_App.Services.IdentityServices
     public class AccountServices(IOptions<JwtDetails> options)
         : IAccountServices
     {
-        private JwtDetails _jwt = options.Value;
+        private readonly JwtDetails _jwt = options.Value;
         public string CreateJwtToken(List<Claim> claims)
         {
             var customClaims = new List<Claim>
@@ -148,6 +148,31 @@ namespace Social_App.Services.IdentityServices
                 Console.WriteLine($"Token validation failed: {ex.Message}");
                 return null; // Return null if token is invalid
             }
+        }
+
+        public string GenerateTokenFromPrincipal(ClaimsPrincipal principal)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_jwt.JwtKey);
+
+            // Extract claims from the principal
+            var claims = new List<Claim>(principal.Claims);
+
+            // Define the token descriptor with claims, expiration, signing key, etc.
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(_jwt.JwtExpireMinutes),
+                Issuer = _jwt.JwtIssuer,
+                Audience = _jwt.JwtAudience,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            // Create the token
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            // Return the serialized token
+            return tokenHandler.WriteToken(token);
         }
     }
 }

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Social_App.Core.Helpers
 {
-    public class TokenModel
+    public class CustomClaimTypes
     {
-        public string? AccessToken { get; set; }
-        public string? RefreshToken { get; set; }
+        public const string FullUserName = "FullUserName";
+        public const string Gender = "Gender";
     }
 }

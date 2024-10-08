@@ -14,7 +14,9 @@ namespace Social_App.Services.IdentityServices
         (IDocumentSession session, IAccountServices accountServices, IEmailSender emailSender) 
         : IUserManagerWithMarten
     {
-        public async Task<bool> EmailExists(string email)
+        private const int maxNumOfTries = 5;
+
+        public async Task<bool> DoesEmailExists(string email)
         {
             return await session.Query<User>()
                    .Where(u => u.Email.Equals(email))
@@ -36,14 +38,56 @@ namespace Social_App.Services.IdentityServices
             return user is null ? throw new NotFoundException(typeof(User).Name, userName) : user.IsEmailConfirmed;
         }
 
-        public Task<TokenModel> LoginWithEmailOrUserName(string userName, string password)
+        public async Task<TokenModel> LoginWithEmailOrUserName(string userName, string password)
         {
-            throw new NotImplementedException();
+            var user = await session.Query<User>()
+                    .FirstOrDefaultAsync(u => u.UserName.Equals(userName) || u.Email.Equals(userName));
+            if (user is null)
+                throw new NotFoundException("Email or password wrong");
+
+            if (!user.IsEmailConfirmed)
+            {
+                throw new Exception("Forbbiden Account");
+            }
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier,user.Id.ToString()),
+                new(ClaimTypes.Name,user.UserName),
+                new(CustomClaimTypes.FullUserName,user.FirstName+user.LastName),
+                new(ClaimTypes.Email,user.Email),
+                new(CustomClaimTypes.Gender, user.Gender.ToString())
+            };
+
+            var accessToken = accountServices.CreateJwtToken(claims);
+            var refreshToken = accountServices.CreateRefreshToken();
+            user.RefreshToken = refreshToken;
+            session.Update(user);
+            await session.SaveChangesAsync();
+
+            return new TokenModel
+            {
+                RefreshToken = refreshToken,
+                AccessToken = accessToken
+            };
         }
 
-        public Task<TokenModel> RefreshTheToken(string accessToken, string refreshToken)
+        public async Task<TokenModel> RefreshTheToken(string accessToken, string refreshToken)
         {
-            throw new NotImplementedException();
+            var user = await session.Query<User>()
+               .FirstOrDefaultAsync(u => !string.IsNullOrEmpty(u.RefreshToken) && u.RefreshToken.Equals(refreshToken))
+               ?? throw new NotFoundException($"User with refresh Token '{refreshToken}' not found");
+
+            var newRefreshToken = accountServices.CreateRefreshToken();
+            user.RefreshToken = newRefreshToken;
+
+            var pricples = accountServices.GetPrincipalFromToken(accessToken);
+            var newToken = accountServices.GenerateTokenFromPrincipal(pricples);
+
+            return new TokenModel
+            {
+                AccessToken = newToken,
+                RefreshToken = newRefreshToken,
+            };
         }
 
         public async Task<bool> RegisterAccount(User user)
@@ -103,6 +147,51 @@ namespace Social_App.Services.IdentityServices
             return false;
         }
 
+        //for the first screen that contain a field for email
+        public async Task<bool> RequestForResetPassword(string email)
+        {
+            var user = await FindUserByEmailOrUserName(email);
+            user.NumberOfTries += 1;
+            if (user.NumberOfTries > maxNumOfTries)
+            {
+                user.AccountLocked = true;
+                session.Update(user);
+                await session.SaveChangesAsync();
+                throw new Exception("User Rech The max number of tries");
+            }
+
+            var code = accountServices.CreateVerifecationCode(6);
+            user.VerifecationCode = accountServices.HashString(code);
+            user.FinalTimeForVerify = DateTime.Now.AddMinutes(60);
+
+            await emailSender.SendEmailAsync(user.Email, "Verify your account", $"<h2>Your verifecation code is <strong>{code}</strong></h2>");
+
+            session.Update(user);
+            await session.SaveChangesAsync();
+            return true;
+        }
+
+        //for second screen that contain a field for verifecation code
+        public async Task<bool> VerifyChangingPasswordCodeToken(string email, string code)
+        {
+            var user = await FindUserByEmailOrUserName(email);
+            if (user.VerifecationCode != accountServices.HashString(code))
+                return false;
+            return true;
+        }
         
+        //for third screen that contain 2 fields for password and confirm password
+        public async Task<bool> ChangePassword(string email, string newPassword, string code)
+        {
+            var user = await FindUserByEmailOrUserName(email);
+            if (user.VerifecationCode != accountServices.HashString(code))
+                return false;
+            var salt = accountServices.CreateSalt();
+            user.Password = accountServices.HashPasswordWithSalt(salt, newPassword);
+            user.Salt = salt;
+            session.Update(user);
+            await session.SaveChangesAsync();
+            return true;
+        }
     }
 }

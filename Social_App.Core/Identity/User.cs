@@ -32,7 +32,12 @@ namespace Social_App.Core.Identity
         public bool IsEmailConfirmed { get; set; }
 
         public string? VerifecationCode { get; set; }
+        public DateTime FinalTimeForVerify { get; set; }
+        public int NumberOfTries { get; set; } = 0;
 
         public string? RefreshToken { get; set; }
+
+        public bool AccountLocked { get; set; }
+
     }
 }

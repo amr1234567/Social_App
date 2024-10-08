@@ -1,6 +1,6 @@
 ﻿using Social_App.API.CQRSConfigurations;
 
-namespace Social_App.API.Features.Users.DtoModels
+namespace Social_App.API.Features.Users.RegisterUser
 {
     public class CreateUserCommand : ICommand<CreateUserResponse>
     {
