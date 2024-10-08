@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,5 +13,8 @@ namespace Social_App.Services.Interfaces
         string CreateSalt();
         string CreateVerifecationCode(int length);
         string HashString(string input);
+        string CreateJwtToken(List<Claim> claims);
+        string CreateRefreshToken();
+        ClaimsPrincipal GetPrincipalFromToken(string token);
     }
 }

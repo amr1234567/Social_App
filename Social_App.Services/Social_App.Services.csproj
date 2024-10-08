@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Marten" Version="7.29.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="8.0.8" />
     <PackageReference Include="MimeKit" Version="4.8.0" />
   </ItemGroup>

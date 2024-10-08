@@ -1,9 +1,12 @@
 ﻿using JasperFx.CodeGeneration.Frames;
 using Marten;
+using Microsoft.IdentityModel.Tokens;
 using Social_App.Core.Exceptions;
 using Social_App.Core.Helpers;
 using Social_App.Core.Identity;
 using Social_App.Services.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Social_App.Services.IdentityServices
 {
@@ -38,6 +41,10 @@ namespace Social_App.Services.IdentityServices
             throw new NotImplementedException();
         }
 
+        public Task<TokenModel> RefreshTheToken(string accessToken, string refreshToken)
+        {
+            throw new NotImplementedException();
+        }
 
         public async Task<bool> RegisterAccount(User user)
         {
@@ -66,8 +73,15 @@ namespace Social_App.Services.IdentityServices
             return true;
         }
 
+        public async Task<bool> RevokeToken(string refreshToken)
+        {
+            var user = await session.Query<User>()
+                .FirstOrDefaultAsync(u => !string.IsNullOrEmpty(u.RefreshToken) && u.RefreshToken.Equals(refreshToken))
+                ?? throw new NotFoundException($"User with refresh Token '{refreshToken}' not found");
+            user.RefreshToken = null;
+            return true;
+        }
 
-       
         public async Task<bool> UserNameExists(string userName)
         {
             return await session.Query<User>()
@@ -88,5 +102,7 @@ namespace Social_App.Services.IdentityServices
             }
             return false;
         }
+
+        
     }
 }

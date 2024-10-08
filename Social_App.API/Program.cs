@@ -1,8 +1,12 @@
 using Marten;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Social_App.API.MediatRBehaviors;
 using Social_App.Core.Helpers;
 using Social_App.Services.IdentityServices;
 using Social_App.Services.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 namespace Social_App.API
 {
     public class Program
@@ -38,12 +42,49 @@ namespace Social_App.API
             //helpers
 
             builder.Services.Configure<EmailDetails>(builder.Configuration.GetSection("emailSenderOptions"));
+            builder.Services.Configure<JwtDetails>(builder.Configuration.GetSection("Jwt"));
 
             //Scopes
 
             builder.Services.AddScoped<IUserManagerWithMarten, UserManagerWithMarten>();
             builder.Services.AddScoped<IAccountServices, AccountServices>();
             builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+
+            //Authentication
+
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); // => remove default claims
+            builder.Services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(cfg =>
+                {
+                    cfg.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                            {
+                                context.Response.Headers.Append("Token-Expired", "true");
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                    cfg.RequireHttpsMetadata = false;
+                    cfg.SaveToken = true;
+                    cfg.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = builder.Configuration["Jwt:JwtIssuer"],
+                        ValidAudience = builder.Configuration["Jwt:JwtIssuer"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:JwtKey"]!)),
+                        ClockSkew = TimeSpan.Zero // remove delay of token when expire
+                    };
+                });
+
 
             var app = builder.Build();
 

@@ -32,5 +32,7 @@ namespace Social_App.Core.Identity
         public bool IsEmailConfirmed { get; set; }
 
         public string? VerifecationCode { get; set; }
+
+        public string? RefreshToken { get; set; }
     }
 }

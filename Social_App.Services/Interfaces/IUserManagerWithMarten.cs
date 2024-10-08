@@ -14,6 +14,8 @@ namespace Social_App.Services.Interfaces
         Task<bool> VerifyAccount(string username, string verifecationCode);
 
         Task<TokenModel> LoginWithEmailOrUserName(string userName, string password);
+        Task<TokenModel> RefreshTheToken(string accessToken, string refreshToken);
+        Task<bool> RevokeToken(string refreshToken);
 
         Task<User> FindUserByEmailOrUserName(string userName);
 
