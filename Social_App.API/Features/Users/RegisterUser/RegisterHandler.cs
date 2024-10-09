@@ -8,9 +8,9 @@ using Social_App.Services.Interfaces;
 namespace Social_App.API.Features.Users.RegisterUser
 {
     public class RegisterHandler(IUserManagerWithMarten userManager)
-        : ICommandHandler<CreateUserCommand, CreateUserResponse>
+        : ICommandHandler<CreateUserRequest, CreateUserResponse>
     {
-        public async Task<CreateUserResponse> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+        public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken cancellationToken)
         {
             var user = request.Adapt<User>();
 

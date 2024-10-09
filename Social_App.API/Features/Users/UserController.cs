@@ -18,7 +18,7 @@ namespace Social_App.API.Features.Users
     public class UserController(IMediator mediator) : ControllerBase
     {
         [HttpPost("register-user")]
-        public async Task<IActionResult> Register([FromBody] CreateUserCommand command)
+        public async Task<IActionResult> Register([FromBody] CreateUserRequest command)
         {
             var result = await mediator.Send(command);
             return Ok(result);

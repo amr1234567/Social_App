@@ -2,7 +2,7 @@
 
 namespace Social_App.API.Features.Users.RegisterUser
 {
-    public class CreateUserCommand : ICommand<CreateUserResponse>
+    public class CreateUserRequest : ICommand<CreateUserResponse>
     {
         public string UserName { get; set; }
         public string FirstName { get; set; }

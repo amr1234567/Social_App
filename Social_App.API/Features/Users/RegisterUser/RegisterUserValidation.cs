@@ -3,7 +3,7 @@ using Social_App.Services.Interfaces;
 using System.Text.RegularExpressions;
 namespace Social_App.API.Features.Users.RegisterUser
 {
-    public class RegisterUserValidation : AbstractValidator<CreateUserCommand>
+    public class RegisterUserValidation : AbstractValidator<CreateUserRequest>
     {
         public RegisterUserValidation()
         {
@@ -56,7 +56,5 @@ namespace Social_App.API.Features.Users.RegisterUser
                 .Must(g => g == 'M' || g == 'm' || g == 'F' || g == 'f')
                 .WithMessage("Gender must be 'M/m' for male or 'F/f' for female");
         }
-
-        
     }
 }
