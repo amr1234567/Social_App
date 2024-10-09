@@ -10,6 +10,7 @@ namespace Social_App.Services.Interfaces
     public interface IAccountServices
     {
         string HashPasswordWithSalt(string salt,string password);
+        bool BeAValidUserNameOrEmail(string username);
         string CreateSalt();
         string CreateVerifecationCode(int length);
         string HashString(string input);

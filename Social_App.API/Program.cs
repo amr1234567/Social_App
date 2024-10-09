@@ -1,3 +1,4 @@
+using FluentValidation;
 using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -40,6 +41,8 @@ namespace Social_App.API
 
 
             //helpers
+
+            builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
             builder.Services.Configure<EmailDetails>(builder.Configuration.GetSection("emailSenderOptions"));
             builder.Services.Configure<JwtDetails>(builder.Configuration.GetSection("Jwt"));

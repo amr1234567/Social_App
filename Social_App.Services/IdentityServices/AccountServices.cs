@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Social_App.Services.IdentityServices
 {
@@ -20,13 +21,17 @@ namespace Social_App.Services.IdentityServices
         {
             var customClaims = new List<Claim>
             {
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(ClaimTypes.PrimarySid, Guid.NewGuid().ToString()),
             };
 
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.JwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
             var expires = DateTime.Now.AddMinutes(_jwt.JwtExpireMinutes);
+
+            customClaims.Add(new(ClaimTypes.Expiration, expires.ToString()));
 
             var token = new JwtSecurityToken(
                 _jwt.JwtIssuer,
@@ -118,7 +123,7 @@ namespace Social_App.Services.IdentityServices
                 var tokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(_jwt.JwtKey)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.JwtKey)),
                     ValidateIssuer = true,
                     ValidIssuer = _jwt.JwtIssuer,
                     ValidateAudience = true,
@@ -173,6 +178,15 @@ namespace Social_App.Services.IdentityServices
 
             // Return the serialized token
             return tokenHandler.WriteToken(token);
+        }
+
+        public bool BeAValidUserNameOrEmail(string username)
+        {
+            var userNameRegex = new Regex("^[a-zA-Z0-9-_]+$");
+            // Regular expression for email
+            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+
+            return userNameRegex.IsMatch(username) || emailRegex.IsMatch(username);
         }
     }
 }

@@ -1,17 +1,11 @@
-﻿using JasperFx.CodeGeneration.Frames;
-using Marten;
-using Microsoft.IdentityModel.Tokens;
-using Social_App.Core.Exceptions;
-using Social_App.Core.Helpers;
-using Social_App.Core.Identity;
+﻿using Microsoft.Extensions.Logging;
 using Social_App.Services.Interfaces;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Social_App.Services.IdentityServices
 {
     public class UserManagerWithMarten
-        (IDocumentSession session, IAccountServices accountServices, IEmailSender emailSender) 
+        (IDocumentSession session, IAccountServices accountServices, IEmailSender emailSender, ILogger<UserManagerWithMarten> logger) 
         : IUserManagerWithMarten
     {
         private const int maxNumOfTries = 5;
@@ -41,8 +35,9 @@ namespace Social_App.Services.IdentityServices
         public async Task<TokenModel> LoginWithEmailOrUserName(string userName, string password)
         {
             var user = await session.Query<User>()
-                    .FirstOrDefaultAsync(u => u.UserName.Equals(userName) || u.Email.Equals(userName));
-            if (user is null)
+                    .FirstOrDefaultAsync(u => u.UserName.Equals(userName) || u.Email.Equals(userName))
+                    ?? throw new NotFoundException("Email or password wrong");
+            if (accountServices.HashPasswordWithSalt(user.Salt, password) != user.Password)
                 throw new NotFoundException("Email or password wrong");
 
             if (!user.IsEmailConfirmed)
@@ -79,9 +74,11 @@ namespace Social_App.Services.IdentityServices
 
             var newRefreshToken = accountServices.CreateRefreshToken();
             user.RefreshToken = newRefreshToken;
-
             var pricples = accountServices.GetPrincipalFromToken(accessToken);
             var newToken = accountServices.GenerateTokenFromPrincipal(pricples);
+
+            session.Update(user);
+            await session.SaveChangesAsync();
 
             return new TokenModel
             {
@@ -109,11 +106,13 @@ namespace Social_App.Services.IdentityServices
 
             user.VerifecationCode = accountServices.HashString(code);
 
-            await emailSender.SendEmailAsync(user.Email, "Verify your account", $"<h2>Your verifecation code is <strong>{code}</strong></h2>");
+            //delete this line after debug
+            logger.LogInformation($"[Verifecation Code] ==> '{code}'");
+            //await emailSender.SendEmailAsync(user.Email, "Verify your account", $"<h2>Your verifecation code is <strong>{code}</strong></h2>");
             
             session.Store(user);
             await session.SaveChangesAsync();
-
+            logger.LogInformation("(User) Account Created");
             return true;
         }
 
@@ -123,10 +122,13 @@ namespace Social_App.Services.IdentityServices
                 .FirstOrDefaultAsync(u => !string.IsNullOrEmpty(u.RefreshToken) && u.RefreshToken.Equals(refreshToken))
                 ?? throw new NotFoundException($"User with refresh Token '{refreshToken}' not found");
             user.RefreshToken = null;
+            session.Update(user);
+            await session.SaveChangesAsync();
+
             return true;
         }
 
-        public async Task<bool> UserNameExists(string userName)
+        public async Task<bool> DoesUserNameExists(string userName)
         {
             return await session.Query<User>()
                     .Where(u => u.UserName.Equals(userName))
@@ -142,8 +144,10 @@ namespace Social_App.Services.IdentityServices
                 user.IsEmailConfirmed = true;
                 session.Update(user);
                 await session.SaveChangesAsync();
+                logger.LogInformation("(User) Account Verified");
                 return true;
             }
+            logger.LogError("(User) Codes Doesn't match");
             return false;
         }
 
@@ -161,10 +165,11 @@ namespace Social_App.Services.IdentityServices
             }
 
             var code = accountServices.CreateVerifecationCode(6);
+            logger.LogInformation($"[Verifecation Code For Password] ==> '{code}'");
             user.VerifecationCode = accountServices.HashString(code);
             user.FinalTimeForVerify = DateTime.Now.AddMinutes(60);
 
-            await emailSender.SendEmailAsync(user.Email, "Verify your account", $"<h2>Your verifecation code is <strong>{code}</strong></h2>");
+            //await emailSender.SendEmailAsync(user.Email, "Verify your account", $"<h2>Your verifecation code is <strong>{code}</strong></h2>");
 
             session.Update(user);
             await session.SaveChangesAsync();

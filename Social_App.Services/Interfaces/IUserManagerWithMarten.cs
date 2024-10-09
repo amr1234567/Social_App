@@ -1,11 +1,4 @@
-﻿using Social_App.Core.Helpers;
-using Social_App.Core.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Social_App.Services.Interfaces
 {
     public interface IUserManagerWithMarten
@@ -20,7 +13,11 @@ namespace Social_App.Services.Interfaces
         Task<User> FindUserByEmailOrUserName(string userName);
 
         Task<bool> IsUserActive(string userName);
-        Task<bool> UserNameExists(string userName);
+        Task<bool> DoesUserNameExists(string userName);
+        // <summary>
+        // check if the email is exist for another user
+        // </summary>
+        // <param name="email">user's email </param>
         Task<bool> DoesEmailExists(string email);
 
         Task<bool> RequestForResetPassword(string email);
