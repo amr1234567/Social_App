@@ -1,4 +1,4 @@
-﻿using Social_App.Core.Helpers;
+﻿using Social_App.API.Models.Helpers;
 
 namespace Social_App.API.Features.Users.Login
 {

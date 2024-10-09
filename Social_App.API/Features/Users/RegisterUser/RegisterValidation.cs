@@ -1,11 +1,10 @@
 ﻿using FluentValidation;
-using Social_App.Services.Interfaces;
 using System.Text.RegularExpressions;
 namespace Social_App.API.Features.Users.RegisterUser
 {
-    public class RegisterUserValidation : AbstractValidator<CreateUserRequest>
+    public class RegisterValidation : AbstractValidator<RegisterRequest>
     {
-        public RegisterUserValidation()
+        public RegisterValidation()
         {
             // Email validation
             RuleFor(u => u.Email)
@@ -18,7 +17,7 @@ namespace Social_App.API.Features.Users.RegisterUser
             RuleFor(u => u.UserName)
                 .NotEmpty()
                 .WithMessage("Username is required")
-                .Matches("^[a-zA-Z0-9-_]+$\r\n")
+                .Matches("^[a-zA-Z0-9-_]+$")
                 .WithMessage("Username must be a valid email or a username (letters, numbers, hyphens, underscores)");
 
             // Password validation (at least one letter, one number, one special character)

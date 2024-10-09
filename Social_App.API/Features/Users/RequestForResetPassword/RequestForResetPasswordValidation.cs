@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
-using Social_App.Services.IdentityServices;
-using Social_App.Services.Interfaces;
+using Social_App.API.Interfaces;
 
 namespace Social_App.API.Features.Users.RequestForResetPassword
 {

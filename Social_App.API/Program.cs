@@ -2,10 +2,10 @@ using FluentValidation;
 using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Social_App.API.Interfaces;
 using Social_App.API.MediatRBehaviors;
-using Social_App.Core.Helpers;
-using Social_App.Services.IdentityServices;
-using Social_App.Services.Interfaces;
+using Social_App.API.Models.Helpers;
+using Social_App.API.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 namespace Social_App.API
@@ -49,7 +49,7 @@ namespace Social_App.API
 
             //Scopes
 
-            builder.Services.AddScoped<IUserManagerWithMarten, UserManagerWithMarten>();
+            //builder.Services.AddScoped<IUserManagerWithMarten, UserManagerWithMarten>();
             builder.Services.AddScoped<IAccountServices, AccountServices>();
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 

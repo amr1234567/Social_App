@@ -1,4 +1,4 @@
-﻿namespace Social_App.API.Features.Users.CheckEmailAvaliable
+﻿namespace Social_App.API.Features.Users.CheckEmailAvailable
 {
     public class CheckEmailAvailableResponse
     {

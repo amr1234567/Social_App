@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Social_App.API.Features.Users.CheckEmailAvaliable;
 
 namespace Social_App.API.Features.Users.CheckEmailAvailable
 {

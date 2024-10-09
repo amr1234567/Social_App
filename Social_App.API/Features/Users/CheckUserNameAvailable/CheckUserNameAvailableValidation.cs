@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Social_App.API.Features.Users.CheckUserNameAvaliable;
 
 namespace Social_App.API.Features.Users.CheckUserNameAvailable
 {

@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Social_App.API.Features.Users.ChangePassword;
-using Social_App.API.Features.Users.CheckEmailAvaliable;
-using Social_App.API.Features.Users.CheckUserNameAvaliable;
+using Social_App.API.Features.Users.CheckEmailAvailable;
+using Social_App.API.Features.Users.CheckUserNameAvailable;
 using Social_App.API.Features.Users.Login;
 using Social_App.API.Features.Users.RefreshToken;
 using Social_App.API.Features.Users.RegisterUser;
@@ -18,7 +18,7 @@ namespace Social_App.API.Features.Users
     public class UserController(IMediator mediator) : ControllerBase
     {
         [HttpPost("register-user")]
-        public async Task<IActionResult> Register([FromBody] CreateUserRequest command)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest command)
         {
             var result = await mediator.Send(command);
             return Ok(result);
