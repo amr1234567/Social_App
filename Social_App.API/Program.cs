@@ -1,10 +1,7 @@
 using FluentValidation;
-using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Social_App.API.Interfaces;
 using Social_App.API.MediatRBehaviors;
-using Social_App.API.Models.Helpers;
 using Social_App.API.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -34,11 +31,17 @@ namespace Social_App.API
             });
 
             //Database Configuration
-            builder.Services.AddMarten(config =>
-            {
-                config.Connection(builder.Configuration.GetConnectionString("devDB")!);
-            }).UseLightweightSessions();
+            #region Marten Configuration
+            //builder.Services.AddMarten(config =>
+            //   {
+            //       config.Connection(builder.Configuration.GetConnectionString("devDB")!);
+            //   }).UseLightweightSessions(); 
+            #endregion
 
+            builder.Services.AddDbContext<ApplicationContext>(optionsAction =>
+            {
+                optionsAction.UseNpgsql(builder.Configuration.GetConnectionString("devDB"));
+            });
 
             //helpers
 

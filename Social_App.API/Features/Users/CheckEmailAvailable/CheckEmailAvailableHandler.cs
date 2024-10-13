@@ -1,11 +1,8 @@
-﻿using Marten;
-using Social_App.API.CQRSConfigurations;
-using Social_App.API.Models.Identity;
-
+﻿
 namespace Social_App.API.Features.Users.CheckEmailAvailable
 {
     public class CheckEmailAvailableHandler
-        (IDocumentSession session)
+        (ApplicationContext context)
         : IQueryHandler<CheckEmailAvailableRequest, CheckEmailAvailableResponse>
     {
         public async Task<CheckEmailAvailableResponse> Handle(CheckEmailAvailableRequest request, CancellationToken cancellationToken)
@@ -16,9 +13,16 @@ namespace Social_App.API.Features.Users.CheckEmailAvailable
 
         private async Task<bool> DoesEmailExists(string email)
         {
-            return await session.Query<User>()
-                   .Where(u => u.Email.Equals(email))
-                   .AnyAsync();
+            return await context.Users.Where(u=> u.Email == email).AnyAsync();
         }
+
+        #region Marten function with (IDocumentSession)
+        //private async Task<bool> DoesEmailExists(string email)
+        //{
+        //    return await session.Query<User>()
+        //           .Where(u => u.Email.Equals(email))
+        //           .AnyAsync();
+        //} 
+        #endregion
     }
 }
