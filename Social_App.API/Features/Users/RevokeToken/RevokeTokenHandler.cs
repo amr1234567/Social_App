@@ -1,12 +1,8 @@
-﻿using Marten;
-using Social_App.API.CQRSConfigurations;
-using Social_App.API.Models.Exceptions;
-using Social_App.API.Models.Identity;
-
+﻿
 namespace Social_App.API.Features.Users.RevokeToken
 {
     public class RevokeTokenHandler
-        (IDocumentSession session)
+        (ApplicationContext context)
         : ICommandHandler<RevokeTokenRequest, RevokeTokenResponse>
     {
         public async Task<RevokeTokenResponse> Handle(RevokeTokenRequest request, CancellationToken cancellationToken)
@@ -17,15 +13,29 @@ namespace Social_App.API.Features.Users.RevokeToken
 
         private async Task<bool> RevokeToken(string refreshToken)
         {
-            var user = await session.Query<User>()
+            var user = await context.Users
                 .FirstOrDefaultAsync(u => !string.IsNullOrEmpty(u.RefreshToken) && u.RefreshToken.Equals(refreshToken))
                 ?? throw new NotFoundException($"User with refresh Token '{refreshToken}' not found");
             user.RefreshToken = null;
-            session.Update(user);
-            await session.SaveChangesAsync();
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
 
             return true;
         }
+
+        #region Change data with marten
+        //private async Task<bool> RevokeToken(string refreshToken)
+        //{
+        //    var user = await session.Query<User>()
+        //        .FirstOrDefaultAsync(u => !string.IsNullOrEmpty(u.RefreshToken) && u.RefreshToken.Equals(refreshToken))
+        //        ?? throw new NotFoundException($"User with refresh Token '{refreshToken}' not found");
+        //    user.RefreshToken = null;
+        //    session.Update(user);
+        //    await session.SaveChangesAsync();
+
+        //    return true;
+        //} 
+        #endregion
 
     }
 }

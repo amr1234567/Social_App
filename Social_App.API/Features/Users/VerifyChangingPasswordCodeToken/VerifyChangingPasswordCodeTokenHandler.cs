@@ -1,13 +1,11 @@
-﻿using Marten;
-using Social_App.API.CQRSConfigurations;
-using Social_App.API.Interfaces;
-using Social_App.API.Models.Exceptions;
-using Social_App.API.Models.Identity;
+﻿
+
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace Social_App.API.Features.Users.VerifyChangingPasswordCodeToken
 {
     public class VerifyChangingPasswordCodeTokenHandler
-        (IDocumentSession session,IAccountServices accountServices)
+        (ApplicationContext context, IAccountServices accountServices)
         : IQueryHandler<VerifyChangingPasswordCodeTokenRequest, VerifyChangingPasswordCodeTokenResponse>
     {
         public async Task<VerifyChangingPasswordCodeTokenResponse> Handle(VerifyChangingPasswordCodeTokenRequest request, CancellationToken cancellationToken)
@@ -16,14 +14,26 @@ namespace Social_App.API.Features.Users.VerifyChangingPasswordCodeToken
             return new VerifyChangingPasswordCodeTokenResponse { Authorized = result };
         }
 
-        public async Task<bool> VerifyChangingPasswordCodeToken(string userName, string code)
+        private async Task<bool> VerifyChangingPasswordCodeToken(string userName, string verifecationCode)
         {
-            var user = await session.Query<User>()
+            var user = await context.Users
                     .FirstOrDefaultAsync(u => u.UserName.Equals(userName) || u.Email.Equals(userName))
                     ?? throw new NotFoundException(typeof(User).Name, userName);
-            if (user.VerifecationCode != accountServices.HashString(code))
+            if (user.VerifecationCode != accountServices.HashString(verifecationCode))
                 return false;
             return true;
         }
+
+        #region Verify with marten
+        //public async Task<bool> VerifyChangingPasswordCodeToken(string userName, string code)
+        //{
+        //    var user = await session.Query<User>()
+        //            .FirstOrDefaultAsync(u => u.UserName.Equals(userName) || u.Email.Equals(userName))
+        //            ?? throw new NotFoundException(typeof(User).Name, userName);
+        //    if (user.VerifecationCode != accountServices.HashString(code))
+        //        return false;
+        //    return true;
+        //} 
+        #endregion
     }
 }
