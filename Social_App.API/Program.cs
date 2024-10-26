@@ -1,8 +1,10 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Social_App.API.Config;
 using Social_App.API.MediatRBehaviors;
 using Social_App.API.Services;
+using Social_App.API.SignalR;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 namespace Social_App.API
@@ -19,6 +21,10 @@ namespace Social_App.API
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddScoped<IConversationService, ConversationService>();
+            builder.Services.AddScoped<IMessageService, MessageService>();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddSignalR();
 
 
             //CQRS Configurations
@@ -56,6 +62,15 @@ namespace Social_App.API
             builder.Services.AddScoped<IAccountServices, AccountServices>();
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("PublicPolicy",
+                    builder => builder.AllowAnyHeader()
+                                      .AllowAnyMethod()
+                                      .AllowAnyOrigin());
+            });
+
+          
 
             //Authentication
 
@@ -78,6 +93,16 @@ namespace Social_App.API
                                 context.Response.Headers.Append("Token-Expired", "true");
                             }
                             return Task.CompletedTask;
+                        },
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                context.HttpContext.Request.Path.StartsWithSegments("/chatHub"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
                         }
                     };
                     cfg.RequireHttpsMetadata = false;
@@ -89,7 +114,10 @@ namespace Social_App.API
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:JwtKey"]!)),
                         ClockSkew = TimeSpan.Zero // remove delay of token when expire
                     };
+
                 });
+
+            builder.Services.ConfigSwagger();
 
 
             var app = builder.Build();
@@ -102,12 +130,14 @@ namespace Social_App.API
             }
 
             app.UseHttpsRedirection();
+            app.UseCors("PublicPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.MapControllers();
+            app.MapHub<ChatHub>("/chatHub");
 
             app.Run();
         }
