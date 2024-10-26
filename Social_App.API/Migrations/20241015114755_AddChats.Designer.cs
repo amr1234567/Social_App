@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Social_App.API.Context;
@@ -11,9 +12,11 @@ using Social_App.API.Context;
 namespace Social_App.API.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20241015114755_AddChats")]
+    partial class AddChats
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,19 +80,6 @@ namespace Social_App.API.Migrations
                     b.HasIndex("ConversationId");
 
                     b.ToTable("Messages");
-                });
-
-            modelBuilder.Entity("Social_App.API.Models.Chats.UserConnection", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConnectionId")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId", "ConnectionId");
-
-                    b.ToTable("UsersConnections");
                 });
 
             modelBuilder.Entity("Social_App.API.Models.Identity.User", b =>
